@@ -12,8 +12,9 @@ The environment with the software necessary to run the code in this repository c
 
 
 This code has been tested using python3 so it is recommended that it be used.
+Example usage:
+```python3 classify.py```
 
 
 Code for ```deploy.prototxt``` was copied from the following [repository](https://github.com/salathegroup/plantvillage_deeplearning_paper_analysis "PlantVillage Deep Learning Analysis")
 It was copied from ```googLeNet/color-80-20/finetune```
-
