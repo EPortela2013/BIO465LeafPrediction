@@ -1,9 +1,6 @@
 import numpy as np
 from PIL import Image
 
-import sys
-sys.path.append('caffe/distribute/python')
-
 import caffe
 
 caffe.set_device(0)
