@@ -10,6 +10,8 @@ the appropriate VirtualBox version for the host system.  These can be found here
 
 The environment with the software necessary to run the code in this repository can be found [here](http://edwardportela.com/bio465/Ubuntu_17.10-VB-64bit.7z "VirtualBox Environment")
 
+The username and password for this environment are both osboxes.org
+
 
 This code has been tested using python3 so it is recommended that it be used.
 Example usage:
