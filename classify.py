@@ -39,10 +39,41 @@ out = net.forward()
 
 #print predicted labels
 labels = np.loadtxt("labels.txt", str, delimiter='\t')
-top_k = net.blobs['prob'].data[0].flatten().argsort()[-1:-6:-1]
+top_k = net.blobs['prob'].data[0].flatten().argsort()
 
-#print(net.blobs['prob'].data[0].flatten().argsort())
+top_plant_set = set()
+index = 0
 
+while len(top_plant_set) < 5:
+    label = labels[top_k[index]]
+    divisor_index = label.index('___')
+    plant = label[ : divisor_index]
+    top_plant_set.add(plant)
+    index += 1
 
-for x in labels[top_k]:
-    print (x)
+print("\n\n\n****************************************\
+            \nDo you know what type of plant this is?")
+option_num = 1
+for x in sorted(top_plant_set):
+    print("%d. %s" %(option_num, x))
+    option_num += 1
+
+print("%d. Don't know." % option_num )
+
+try:
+    chosen_option = int(input('>>> '))
+except:
+    chosen_option = option_num
+
+if chosen_option > len(top_plant_set) or chosen_option <= 0:
+    print("\nTop prediction is %s" % labels[top_k[0]]);
+else:
+    plant = sorted(top_plant_set)[chosen_option - 1]
+    index = 0
+    while True:
+        label = labels[top_k[index]]
+        if label.find(plant) >= 0:
+            print ("\nTop prediction for plant %s is %s" % (plant, label) )
+            quit()
+        else:
+            index += 1
