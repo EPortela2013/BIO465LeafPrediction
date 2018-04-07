@@ -18,5 +18,17 @@ Example usage:
 ```python3 classify.py```
 
 
-Code for ```deploy.prototxt``` was copied from the following [repository](https://github.com/salathegroup/plantvillage_deeplearning_paper_analysis "PlantVillage Deep Learning Analysis")
+Code for ```deploy.prototxt``` was copied from the following [repository](https://github.com/salathegroup/plantvillage_deeplearning_paper_analysis "PlantVillage Deep Learning Analysis").
 It was copied from ```googLeNet/color-80-20/finetune```
+
+## Downloading caffe models and snapshots
+
+Due to the size of the generated models and snapshots, they have not been included with this repository. However a script to download them has.
+In order to get this information run the following commands.
+```bash
+bash get_snapshots.sh
+```
+Once this is done you can run the example with the following command.
+```bash
+python3 classify.py
+```
