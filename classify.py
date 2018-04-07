@@ -29,7 +29,7 @@ transformer.set_raw_scale('data', 255.0)
 
 
 #load the image in the data layer
-im = caffe.io.load_image('images/apple_rot2.jpg')
+im = caffe.io.load_image('images/plantleaf2.png')
 net.blobs['data'].data[...] = transformer.preprocess('data', im)
 #compute
 out = net.forward()
