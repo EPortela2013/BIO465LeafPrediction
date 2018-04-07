@@ -29,7 +29,7 @@ transformer.set_raw_scale('data', 255.0)
 
 
 #load the image in the data layer
-im = caffe.io.load_image('images/plantleaf2.png')
+im = caffe.io.load_image('images/apple_rot2.jpg')
 net.blobs['data'].data[...] = transformer.preprocess('data', im)
 #compute
 out = net.forward()
@@ -42,7 +42,7 @@ labels = np.loadtxt("labels.txt", str, delimiter='\t')
 top_k = net.blobs['prob'].data[0].flatten().argsort()
 
 top_plant_set = set()
-index = 0
+index = 1
 
 while len(top_plant_set) < 5:
     label = labels[top_k[-index]]
@@ -69,7 +69,7 @@ if chosen_option > len(top_plant_set) or chosen_option <= 0:
     print("\nTop prediction is %s" % labels[top_k[-1]]);
 else:
     plant = sorted(top_plant_set)[chosen_option - 1]
-    index = 0
+    index = 1
     while True:
         label = labels[top_k[-index]]
         if label.find(plant) >= 0:
