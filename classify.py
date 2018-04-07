@@ -45,7 +45,7 @@ top_plant_set = set()
 index = 0
 
 while len(top_plant_set) < 5:
-    label = labels[top_k[index]]
+    label = labels[top_k[-index]]
     divisor_index = label.index('___')
     plant = label[ : divisor_index]
     top_plant_set.add(plant)
@@ -66,14 +66,14 @@ except:
     chosen_option = option_num
 
 if chosen_option > len(top_plant_set) or chosen_option <= 0:
-    print("\nTop prediction is %s" % labels[top_k[0]]);
+    print("\nTop prediction is %s" % labels[top_k[-1]]);
 else:
     plant = sorted(top_plant_set)[chosen_option - 1]
     index = 0
     while True:
-        label = labels[top_k[index]]
+        label = labels[top_k[-index]]
         if label.find(plant) >= 0:
-            print ("\nTop prediction for plant %s is %s" % (plant, label) )
+            print ("\nTop prediction for plant %s is %s" % (plant, label[len( plant + '___') : ]) )
             quit()
         else:
             index += 1
