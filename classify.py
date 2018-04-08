@@ -74,6 +74,6 @@ else:
         label = labels[top_k[-index]]
         if label.find(plant) >= 0:
             print ("\nTop prediction for plant %s is %s" % (plant, label[len( plant + '___') : ]) )
-            quit()
+            break
         else:
             index += 1
