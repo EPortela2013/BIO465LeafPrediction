@@ -11,7 +11,7 @@ import caffe
 caffe.set_mode_cpu()
 
 net = caffe.Net('deploy.prototxt',
-                'snapshots/snapshots__iter_52867.caffemodel',
+                'snapshots/snapshots__iter_54690.caffemodel',
                 caffe.TEST)
 
 #convert mean.binaryproto to numpy array
