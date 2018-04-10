@@ -174,7 +174,8 @@ class Predictor(object):
                     image = Image.open(new_image_name)
                     image.rotate(self.rotation_degrees)
                     temp_name = new_image_name + '-rotated.png'
-                    self.delete_image(new_image_name)
+                    if image_name != new_image_name:
+                        self.delete_image(new_image_name)
                     image.save(temp_name)
                     new_image_name = temp_name
 
