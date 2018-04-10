@@ -1,14 +1,6 @@
 import numpy as np
 from PIL import Image
 
-from image_processor import load_image
-from image_processor import resize_image
-import scipy.misc
-
-image = load_image('images/cherry3.jpg')
-resized_image = resize_image(image, 256, 256, 3, 'half_crop')
-scipy.misc.toimage(resized_image, cmin=0.0, cmax=...).save('images/cherry4.png')
-
 import caffe
 
 # Uncomment the following lines if your caffe is set up to use GPU
@@ -45,7 +37,7 @@ out = net.forward()
 #print predicted labels
 labels = np.loadtxt("labels.txt", str, delimiter='\t')
 top_k = net.blobs['prob'].data[0].flatten().argsort()
-
+probs = sorted(net.blobs['prob'].data[0].flatten())
 plant_set = set()
 index = 1
 
@@ -72,14 +64,14 @@ except:
     chosen_option = option_num
 
 if chosen_option > len(plant_set) or chosen_option <= 0:
-    print("\nTop prediction is %s" % labels[top_k[-1]]);
+    print("\nTop prediction is %s with probability %f" % (labels[top_k[-1]], probs[-1]));
 else:
     plant = sorted_plant_set[chosen_option - 1]
     index = 1
     while True:
         label = labels[top_k[-index]]
         if label.find(plant) >= 0:
-            print ("\nTop prediction for plant %s is %s" % (plant, label[len( plant + '___') : ]) )
+            print ("\nTop prediction for plant %s is %s with probability %f" % (plant, label[len( plant + '___') : ], probs[-index]) )
             break
         else:
             index += 1
