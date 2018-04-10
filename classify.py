@@ -1,6 +1,14 @@
 import numpy as np
 from PIL import Image
 
+from image_processor import load_image
+from image_processor import resize_image
+import scipy.misc
+
+image = load_image('images/cherry3.jpg')
+resized_image = resize_image(image, 256, 256, 3, 'half_crop')
+scipy.misc.toimage(resized_image, cmin=0.0, cmax=...).save('images/cherry4.png')
+
 import caffe
 
 # Uncomment the following lines if your caffe is set up to use GPU
@@ -38,20 +46,21 @@ out = net.forward()
 labels = np.loadtxt("labels.txt", str, delimiter='\t')
 top_k = net.blobs['prob'].data[0].flatten().argsort()
 
-top_plant_set = set()
+plant_set = set()
 index = 1
 
-while len(top_plant_set) < 5:
+while len(plant_set) < 13:
     label = labels[top_k[-index]]
     divisor_index = label.index('___')
     plant = label[ : divisor_index]
-    top_plant_set.add(plant)
+    plant_set.add(plant)
     index += 1
 
 print("\n\n\n****************************************\
             \nDo you know what type of plant this is?")
 option_num = 1
-for x in sorted(top_plant_set):
+sorted_plant_set = sorted(plant_set)
+for x in sorted_plant_set:
     print("%d. %s" %(option_num, x))
     option_num += 1
 
@@ -62,10 +71,10 @@ try:
 except:
     chosen_option = option_num
 
-if chosen_option > len(top_plant_set) or chosen_option <= 0:
+if chosen_option > len(plant_set) or chosen_option <= 0:
     print("\nTop prediction is %s" % labels[top_k[-1]]);
 else:
-    plant = sorted(top_plant_set)[chosen_option - 1]
+    plant = sorted_plant_set[chosen_option - 1]
     index = 1
     while True:
         label = labels[top_k[-index]]
