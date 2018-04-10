@@ -34,9 +34,6 @@ net.blobs['data'].data[...] = transformer.preprocess('data', im)
 #compute
 out = net.forward()
 
-# other possibility : out = net.forward_all(data=np.asarray([transformer.preprocess('data', im)]))
-
-
 #print predicted labels
 labels = np.loadtxt("labels.txt", str, delimiter='\t')
 top_k = net.blobs['prob'].data[0].flatten().argsort()
