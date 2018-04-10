@@ -5,7 +5,7 @@ import caffe
 
 # Uncomment the following lines if your caffe is set up to use GPU
 #caffe.set_device(0)
-#caffe.set_mode_cpu()
+#caffe.set_mode_gpu()
 
 # Comment the following line if your caffe is set up to use GPU
 caffe.set_mode_cpu()
