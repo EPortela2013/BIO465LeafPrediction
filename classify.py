@@ -5,6 +5,7 @@ from image_processor import load_image
 from image_processor import resize_image
 import scipy.misc
 import os
+import threading
 
 os.environ['GLOG_minloglevel'] = '3' # Errors only
 import caffe
@@ -43,7 +44,7 @@ class Predictor(object):
         self.labels = None
         self.sorted_plant_set = None
         self.images_dir = 'images'
-        self.results_file_name = 'results.csv'
+        self.results_file_name = 'results.tsv'
         self.rotation_degrees = 0.0
 
         self.parse_options()
@@ -63,11 +64,11 @@ class Predictor(object):
         os.remove(image_name)
 
     def write_result_headers(self):
-        self.results_file.write("Label, Straight Prediction, Plant Name Given\n")
+        self.results_file.write("Label\tStraight Prediction\tPlant Name Given\n")
 
     def write_result(self, label, straight_prediction, plant_name_given):
         split_label = self.split_label(label)
-        self.results_file.write("%s - %s, %f, %f" %
+        self.results_file.write("%s - %s\t%f\t%f\n" %
                                 (split_label[0], split_label[1], straight_prediction, plant_name_given))
 
 
