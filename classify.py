@@ -64,12 +64,12 @@ class Predictor(object):
         os.remove(image_name)
 
     def write_result_headers(self):
-        self.results_file.write("Label\tStraight Prediction\tPlant Name Given\n")
+        self.results_file.write("Label\tStraight Prediction\tPlant Name Given\tNumber of Images\n")
 
-    def write_result(self, label, straight_prediction, plant_name_given):
+    def write_result(self, label, straight_prediction, plant_name_given, num_images):
         split_label = self.split_label(label)
-        self.results_file.write("%s - %s\t%f\t%f\n" %
-                                (split_label[0], split_label[1], straight_prediction, plant_name_given))
+        self.results_file.write("%s - %s\t%f\t%f\t%d\n" %
+                                (split_label[0], split_label[1], straight_prediction, plant_name_given, num_images))
 
 
     def predict(self, image_name=None, expected_label=None):
@@ -197,7 +197,7 @@ class Predictor(object):
         if num_images > 0:
             ratio_straight = num_correct_straight / num_images
             ratio_plant_name_given = num_correct_plant_given / num_images
-            self.write_result(expected_label, ratio_straight, ratio_plant_name_given)
+            self.write_result(expected_label, ratio_straight, ratio_plant_name_given, num_images)
 
 
 
