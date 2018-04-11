@@ -71,7 +71,6 @@ class Predictor(object):
         self.results_file.write("%s - %s\t%f\t%f\t%d\n" %
                                 (split_label[0], split_label[1], straight_prediction, plant_name_given, num_images))
 
-
     def predict(self, image_name=None, expected_label=None):
 
         if not image_name:
@@ -159,7 +158,6 @@ class Predictor(object):
                 label_path = self.images_dir + '/' + path
                 self.predict_images_dir(label_path)
 
-
     def predict_images_dir(self, path):
         num_images = 0
         num_correct_straight = 0
@@ -170,8 +168,8 @@ class Predictor(object):
         print("Making predictions for label %s" % expected_label)
 
         for possible_image in os.listdir(path):
-            if not os.path.isdir(path + '/' + possible_image):
-                image_name = path + '/' + possible_image
+            image_name = path + '/' + possible_image
+            if not os.path.isdir(image_name) and os.path.exists(image_name):
                 new_image_name = self.resize_if_needed(image_name)
 
                 if self.rotation_degrees != 0.0:
