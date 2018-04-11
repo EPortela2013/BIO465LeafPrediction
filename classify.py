@@ -1,3 +1,5 @@
+import skimage
+
 import numpy as np
 from PIL import Image
 import optparse
@@ -5,7 +7,8 @@ from image_processor import load_image
 from image_processor import resize_image
 import scipy.misc
 import os
-import threading
+import tempfile
+import numpy
 
 os.environ['GLOG_minloglevel'] = '3' # Errors only
 import caffe
@@ -59,10 +62,6 @@ class Predictor(object):
         divisor_index = label.index('___')
         return label[: divisor_index], label[divisor_index + len('___'):]
 
-    @staticmethod
-    def delete_image(image_name):
-        os.remove(image_name)
-
     def write_result_headers(self):
         self.results_file.write("Label\tStraight Prediction\tPlant Name Given\tNumber of Images\n")
 
@@ -70,11 +69,12 @@ class Predictor(object):
         split_label = self.split_label(label)
         self.results_file.write("%s - %s\t%f\t%f\t%d\n" %
                                 (split_label[0], split_label[1], straight_prediction, plant_name_given, num_images))
+        self.results_file.flush()
 
-    def predict(self, image_name=None, expected_label=None):
+    def predict(self, image_handle=None, expected_label=None):
 
-        if not image_name:
-            image_name = self.image_name
+        if not image_handle:
+            raise Exception('Image handle required')
 
         if not expected_label:
             interactive = True
@@ -91,12 +91,12 @@ class Predictor(object):
         transformer.set_channel_swap('data', (2,1,0))
         transformer.set_raw_scale('data', 255.0)
 
+        image = Image.open(image_handle)
+        im = skimage.img_as_float(numpy.asarray(image)).astype(numpy.float32)
+        image_handle.close()
 
-        #load the image in the data layer
-        im = caffe.io.load_image(image_name)
         net.blobs['data'].data[...] = transformer.preprocess('data', im)
 
-        #compute
         net.forward()
 
         top_k = net.blobs['prob'].data[0].flatten().argsort()
@@ -145,10 +145,15 @@ class Predictor(object):
 
     def predict_images(self):
         if self.image_name:
-            image_name = self.resize_if_needed(self.image_name)
-            self.predict(image_name)
-            if self.image_name != image_name:
-                self.delete_image(image_name)
+            image = self.resize_if_needed(self.image_name)
+
+            if self.rotation_degrees != 0.0:
+                image.rotate(self.rotation_degrees)
+
+            temp_file = tempfile.SpooledTemporaryFile(max_size=10000000, mode='w+b')
+            image.save(temp_file, format='PNG')
+            temp_file.seek(0, 0)
+            self.predict(temp_file)
             return
 
         # Predict all images in images folder
@@ -170,49 +175,38 @@ class Predictor(object):
         for possible_image in os.listdir(path):
             image_name = path + '/' + possible_image
             if not os.path.isdir(image_name) and os.path.exists(image_name):
-                new_image_name = self.resize_if_needed(image_name)
+                image = self.resize_if_needed(image_name)
 
                 if self.rotation_degrees != 0.0:
-                    # Rotate image as well
-                    image = Image.open(new_image_name)
                     image.rotate(self.rotation_degrees)
-                    temp_name = new_image_name + '-rotated.png'
-                    if image_name != new_image_name:
-                        self.delete_image(new_image_name)
-                    image.save(temp_name)
-                    new_image_name = temp_name
 
-                result = self.predict(new_image_name, expected_label)
+                temp_file = tempfile.SpooledTemporaryFile(max_size=10000000, mode='w+b')
+                image.save(temp_file, format='PNG')
+                temp_file.seek(0, 0)
+                result = self.predict(temp_file, expected_label)
                 num_images += 1
+
                 if result[0]:
                     num_correct_straight += 1
                 if result[1]:
                     num_correct_plant_given += 1
-
-                if image_name != new_image_name:
-                    self.delete_image(new_image_name)
 
         if num_images > 0:
             ratio_straight = num_correct_straight / num_images
             ratio_plant_name_given = num_correct_plant_given / num_images
             self.write_result(expected_label, ratio_straight, ratio_plant_name_given, num_images)
 
-
-
     def resize_if_needed(self, image_name):
         image = load_image(image_name)
         width, height = image.size
 
         if width == self.image_width and height == self.image_height:
-            return image_name
+            return load_image(image_name)
 
-        new_image_name = image_name + '-resized.png'
         resized_image = resize_image(image, self.image_width, self.image_height,
-                                        self.image_channels, 'half_crop')
-        scipy.misc.toimage(resized_image, cmin=0.0, cmax=...).save(new_image_name)
+                                     self.image_channels, 'half_crop')
 
-        return new_image_name
-
+        return scipy.misc.toimage(resized_image, cmin=0.0, cmax=...)
 
     def parse_options(self):
         parser = optparse.OptionParser(usage="%prog [options]",
