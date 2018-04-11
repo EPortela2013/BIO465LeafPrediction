@@ -39,7 +39,9 @@ class Predictor(object):
         self.arr = np.array(caffe.io.blobproto_to_array(blob))
 
         self.image_name = None
+        self.labels_file_name = 'labels.txt'
         self.labels = None
+        self.sorted_plant_set = None
         self.images_dir = 'images'
         self.results_file_name = 'results.csv'
         self.rotation_degrees = 0.0
@@ -48,6 +50,8 @@ class Predictor(object):
 
         self.results_file = open(self.results_file_name, "w")
         self.write_result_headers()
+
+        self.labels = np.loadtxt(self.labels_file_name, str, delimiter="\t")
 
     @staticmethod
     def split_label(label):
@@ -65,6 +69,7 @@ class Predictor(object):
         split_label = self.split_label(label)
         self.results_file.write("%s - %s, %f, %f" %
                                 (split_label[0], split_label[1], straight_prediction, plant_name_given))
+
 
     def predict(self, image_name=None, expected_label=None):
 
@@ -94,15 +99,14 @@ class Predictor(object):
         #compute
         net.forward()
 
-        #print predicted labels
-        labels = np.loadtxt(self.labels, str, delimiter='\t')
         top_k = net.blobs['prob'].data[0].flatten().argsort()
-        probabilities = sorted(net.blobs['prob'].data[0].flatten())
+        if interactive:
+            probabilities = sorted(net.blobs['prob'].data[0].flatten())
         plant_set = set()
         index = 1
 
         while len(plant_set) < self.num_plants:
-            label = labels[top_k[-index]]
+            label = self.labels[top_k[-index]]
             plant = self.split_label(label)[0]
             plant_set.add(plant)
             index += 1
@@ -126,16 +130,16 @@ class Predictor(object):
             chosen_option = sorted_plant_set.index(expected_plant) + 1
 
         if interactive and (chosen_option > len(plant_set) or chosen_option <= 0):
-            print("\nTop prediction is %s with probability %f" % (labels[top_k[-1]], probabilities[-1]))
+            print("\nTop prediction is %s with probability %f" % (self.labels[top_k[-1]], probabilities[-1]))
             return True, True
         else:
             plant = sorted_plant_set[chosen_option - 1]
             index = 1
             while True:
-                label = labels[top_k[-index]]
+                label = self.labels[top_k[-index]]
                 if label.find(plant) >= 0:
                     interactive and print("\nTop prediction for plant %s is %s with probability %f" % (plant, label[len( plant + '___') : ], probabilities[-index]) )
-                    return expected_label == labels[top_k[-1]], expected_label == label
+                    return expected_label == self.labels[top_k[-1]], expected_label == label
                 else:
                     index += 1
 
@@ -220,7 +224,7 @@ class Predictor(object):
                           help="Path of image on which to make prediction")
 
         parser.add_option("-l", "--labels", type="str", dest="labels",
-                          default='labels.txt',
+                          default=self.labels_file_name,
                           help="Path of labels file")
 
         parser.add_option("-s", "--save-results", type="str", dest="results_file_name",
@@ -233,7 +237,7 @@ class Predictor(object):
 
         (options, args) = parser.parse_args()
         self.image_name = options.image
-        self.labels = options.labels
+        self.labels_file_name = options.labels
         self.results_file_name = options.results_file_name
         self.rotation_degrees = options.rotation_degrees
 
