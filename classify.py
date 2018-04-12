@@ -9,6 +9,7 @@ import scipy.misc
 import os
 import tempfile
 import numpy
+from decimal import *
 
 os.environ['GLOG_minloglevel'] = '3' # Errors only
 import caffe
@@ -57,6 +58,8 @@ class Predictor(object):
 
         self.labels = np.loadtxt(self.labels_file_name, str, delimiter="\t")
 
+        getcontext().prec = 15
+
     @staticmethod
     def split_label(label):
         divisor_index = label.index('___')
@@ -67,7 +70,7 @@ class Predictor(object):
 
     def write_result(self, label, straight_prediction, plant_name_given, num_images):
         split_label = self.split_label(label)
-        self.results_file.write("%s - %s\t%f\t%f\t%d\n" %
+        self.results_file.write("%s - %s\t%s\t%s\t%d\n" %
                                 (split_label[0], split_label[1], straight_prediction, plant_name_given, num_images))
         self.results_file.flush()
 
@@ -192,8 +195,8 @@ class Predictor(object):
                     num_correct_plant_given += 1
 
         if num_images > 0:
-            ratio_straight = num_correct_straight / num_images
-            ratio_plant_name_given = num_correct_plant_given / num_images
+            ratio_straight = Decimal(num_correct_straight) / Decimal(num_images)
+            ratio_plant_name_given = Decimal(num_correct_plant_given) / Decimal(num_images)
             self.write_result(expected_label, ratio_straight, ratio_plant_name_given, num_images)
 
     def resize_if_needed(self, image_name):
