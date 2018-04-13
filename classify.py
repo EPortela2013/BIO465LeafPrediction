@@ -175,7 +175,7 @@ class Predictor(object):
         num_images = 0
         num_correct_straight = 0
         num_correct_plant_given = 0
-        last_dir_index = path.find('/')
+        last_dir_index = path.rfind('/')
         expected_label = path[last_dir_index + 1:]
 
         print("Making predictions for label %s" % expected_label)
