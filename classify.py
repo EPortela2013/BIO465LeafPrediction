@@ -43,6 +43,7 @@ class Predictor(object):
         blob.ParseFromString(data)
         self.arr = np.array(caffe.io.blobproto_to_array(blob))
 
+        self.directory = None
         self.image_name = None
         self.labels_file_name = 'labels.txt'
         self.labels = None
@@ -159,6 +160,10 @@ class Predictor(object):
             self.predict(temp_file)
             return
 
+        if self.directory:
+            self.predict_images_dir(self.directory)
+            return
+
         # Predict all images in images folder
 
         for path in os.listdir(self.images_dir):
@@ -231,12 +236,16 @@ class Predictor(object):
                           default=self.rotation_degrees,
                           help="Path of where to write results")
 
+        parser.add_option("-d", "--directory", type="str", dest="directory",
+                          default=self.directory,
+                          help="Path of label containing images to predict")
+
         (options, args) = parser.parse_args()
         self.image_name = options.image
         self.labels_file_name = options.labels
         self.results_file_name = options.results_file_name
         self.rotation_degrees = options.rotation_degrees
-
+        self.directory = options.directory
 
 if __name__ == '__main__':
     predictor = Predictor()
