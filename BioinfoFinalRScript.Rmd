@@ -1,0 +1,207 @@
+---
+title: "BioinfoFinalRScript"
+output: html_document
+---
+
+Applying the Wilcoxon Test for the accuracy result predicted from the original pictures
+p-value = 0.0002412
+```{r}
+original <- read.table(file="c:/Users/Autumn/Downloads/imageResult/results-dataset-no-rotation.tsv", header=TRUE, sep="\t")
+print(original)
+straightOriginal <- original[,2]
+plantNameGivenOriginal <- original[,3]
+wilcox.test(plantNameGivenOriginal, straightOriginal, paired=TRUE, alternative ="g") 
+
+ninetyRotation <- read.table(file="c:/Users/Autumn/Downloads/imageResult/results-dataset-90.tsv", header=TRUE, sep="\t")
+print(ninetyRotation)
+straightNinety <- ninetyRotation[,2]
+plantNameGivenNinety <- ninetyRotation[,3]
+wilcox.test(plantNameGivenNinety, straightNinety, paired=TRUE, alternative ="g") 
+```
+
+
+Applying the Wilcoxon Test for the accuracy result predicted from the 90 dgree rotating pictures.  Same p-value as the above one. It seems like the existing algorithm already accounted for the rotating angle
+```{r}
+oneEightyRotation <- read.table(file="c:/Users/Autumn/Downloads/imageResult/results-dataset-180.tsv", header=TRUE, sep="\t")
+print(oneEightyRotation)
+straightOneEighty <- oneEightyRotation[,2]
+plantNameGivenOneEighty <- oneEightyRotation[,3]
+wilcox.test(plantNameGivenOneEighty, straightOneEighty, paired=TRUE, alternative ="g") 
+```
+
+Applying the Wilcoxon Test for the accuracy result predicted from the 270 dgree rotating pictures.  Same p-value as the above one. It seems like the existing algorithm already accounted for the rotating angle
+
+```{r}
+twoSeventyRotation <- read.table(file="c:/Users/Autumn/Downloads/imageResult/results-dataset-270.tsv", header=TRUE, sep="\t")
+print(twoSeventyRotation)
+straightTwoSeventy <- twoSeventyRotation[,2]
+plantNameGivenTwoSeventy <- twoSeventyRotation[,3]
+wilcox.test(plantNameGivenTwoSeventy, straightTwoSeventy, paired=TRUE, alternative ="g") 
+```
+
+While pretty sure (since p value is same, I am double checking here if they actually returend same result sets).
+They did.  They turned out to be same
+
+```{r}
+all.equal(straightOriginal, straightNinety, straightOneEighty, straightTwoSeventy)
+all.equal(plantNameGivenOriginal, plantNameGivenNinety,plantNameGivenOneEighty,plantNameGivenTwoSeventy)
+```
+
+This is based on antoher data set that applied slightly different algorithm.  This was not throughly mentioned in the paper
+p-value is 0.0001605
+
+
+```{r}
+dataModel <- read.table(file="c:/Users/Autumn/Downloads/imageResult/results-dataset-model-47398.tsv", header=TRUE, sep="\t")
+print(dataModel)
+straightModel <- dataModel[,2]
+plantNameGivenModel <- dataModel[,3]
+wilcox.test(plantNameGivenModel, straightModel, paired=TRUE, alternative ="g") 
+```
+
+This is based on the accuracy result predicted based on the images we manully found from google or bing.  regardless of the accuracy of the result, one thing clear is that this one is even more likely to reject the null hypothesis.  p-value is 9.664e-06 
+
+
+```{r}
+dataModelNew <- read.table(file="c:/Users/Autumn/Downloads/imageResult/results-new-images.tsv", header=TRUE, sep="\t")
+print(dataModelNew)
+straightNew <- dataModelNew[,2]
+plantNameGivenNew <- dataModelNew[,3]
+wilcox.test(plantNameGivenNew, straightNew, paired=TRUE, alternative ="g") 
+```
+
+Here, we attempted to find out which one produced biggest mean difference between the accuracy of the straight and plant-image given ones.  When we used new images, the mean difference was 0.3187221
+The the mean difference of the result based on the original pictures was 0.05620953
+Since we verified that the angles didn't make difference, we didn't feel the need to apply this step to the results from different rotations.  For our new images, there was bigger difference of accuracy between plant-label ones and none plant
+
+```{r}
+
+deltaCostNew <- abs(plantNameGivenNew - straightNew)
+deltaCostModel <- abs(plantNameGivenModel - straightModel)
+deltaCostOriginal <- abs(plantNameGivenOriginal - straightOriginal)
+
+deltaCostNew
+deltaCostModel
+deltaCostOriginal
+
+mean(deltaCostNew)
+mean(deltaCostModel)
+mean(deltaCostOriginal)
+
+
+```
+
+Same dataset as the "original", but parsed the number of pictures used
+
+```{r}
+df <- read.table(file="c:/Users/Autumn/Downloads/imageResult/original.tsv", header=TRUE, sep="\t")
+print(df)
+straightDF <- df[,2]
+plantNameGivenDF <- df[,3]
+wilcox.test(plantNameGivenDF, straightDF, paired=TRUE, alternative ="g") 
+library("reshape2")
+library("ggplot2")
+```
+
+#Since the data was not tidy, we made the data tidy here
+
+```{r}
+test_data_long <- melt(df, id="Label")  # convert to long format
+test_data_long
+```
+
+plot the chart
+
+```{r}
+originalPlot <-ggplot(test_data_long, aes(Label, value, color = variable, group =variable)) +
+  geom_point() +
+  geom_line()  + theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  labs(y = "Accuracy", title = "Original Prediction Accuracy Comparison")+
+  scale_color_manual(labels = c("No Plant Name Given", "Plant Name Given"), values = c("blue", "red"))+
+  guides(color=guide_legend("Was Plant Name Given"))
+#next two line commented lines can be used when we want to replace the x-axis to numeric value to focus on trend
+#rather than actual labels
+#+
+#  scale_color_manual(labels = c("Plant Not Given", "Plant Given"), values = c("blue", "red"))
+originalPlot
+```
+
+Same dataset as the "DataModelNew", but parsed the number of pictures used
+
+```{r}
+dfModel <- read.table(file="c:/Users/Autumn/Downloads/imageResult/model.tsv", header=TRUE, sep="\t")
+print(dfModel)
+straightDFModel <- dfModel[,2]
+plantNameGivenDFModel <- dfModel[,3]
+wilcox.test(plantNameGivenDFModel, straightDFModel, paired=TRUE, alternative ="g") 
+```
+
+Since the data was not tidy, we made the data tidy here
+```{r}
+test_data_longModel <- melt(dfModel, id="Label")
+
+```
+
+plot the chart
+
+```{r}
+modelPlot <-ggplot(test_data_longModel, aes(Label, value, color = variable, group =variable)) +
+  geom_point() +
+  geom_line()  + theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+  labs(y = "Accuracy", title = "Model Prediction Accuracy Comparison")+
+  scale_color_manual(labels = c("No Plant Name Given", "Plant Name Given"), values = c("blue", "red"))+
+  guides(color=guide_legend("Was Plant Name Given"))
+
+modelPlot
+```
+
+Same dataset as the "DataModelNew", but parsed the number of pictures used
+
+```{r}
+dfNew <- read.table(file="c:/Users/Autumn/Downloads/imageResult/new.tsv", header=TRUE, sep="\t")
+print(dfNew)
+straightDFNew <- dfNew[,2]
+plantNameGivenDFNew <- dfNew[,3]
+labelDFNew<-dfNew[,1]
+wilcox.test(plantNameGivenDFNew, straightDFNew, paired=TRUE, alternative ="g") 
+```
+
+
+Since the data was not tidy, we made the data tidy here
+
+```{r}
+test_data_longNew <- melt(dfNew, id="Label")
+
+```
+
+plot the chart
+
+```{r}
+newPlot <-ggplot(test_data_longNew, aes(Label, value, color = variable, group =variable)) +
+  geom_point() +
+  geom_line()  + theme(axis.text.x = element_text(hjust = 1))+
+  labs(y = "Accuracy", title = "New Images Prediction Accuracy Comparison")+
+  scale_color_manual(labels = c("No Plant Name Given", "Plant Name Given"), values = c("blue", "red"))+
+  guides(color=guide_legend("Was Plant Name Given"))+
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+newPlot
+```
+
+Below mean functions are used to analyze general mean accuracy
+
+```{r}
+mean(straightOriginal)
+mean(plantNameGivenOriginal)
+mean(straightNinety)
+mean(plantNameGivenNinety)
+mean(straightDF)
+mean(plantNameGivenDF)
+mean(straightNew)
+mean(plantNameGivenNew)
+```
+
+```{r}
+```
+
+
